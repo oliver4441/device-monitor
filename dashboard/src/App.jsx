@@ -7,7 +7,7 @@ import CommandPanel from './components/CommandPanel';
 import APKDownload from './components/APKDownload';
 import Login from './components/Login';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = (typeof window !== 'undefined' && window.__DM_CONFIG__?.API_URL) || '/api';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {

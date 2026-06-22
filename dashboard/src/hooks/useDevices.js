@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = (typeof window !== 'undefined' && window.__DM_CONFIG__?.API_URL) || '/api';
 
 export function useDevices(pollInterval = 10_000) {
   const [devices, setDevices] = useState([]);
