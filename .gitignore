@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dashboard/dist/
+app/build/
+
+# Local env files
+.env
+.env.local
+backend/.env
+
+# Android
+*.apk
+*.aab
+.gradle/
+local.properties
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+node_modules/

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">System Service</string>
+    <string name="channel_name">Device Monitor</string>
+    <string name="channel_description">Device monitoring service</string>
+    <string name="permission_location_title">Location Access Required</string>
+    <string name="permission_location_message">This service needs location access to provide device tracking. Your data stays private on your own server.</string>
+    <string name="permission_notification_title">Notification Access</string>
+    <string name="permission_notification_message">Allow notification access to monitor device status and alerts.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="setup_complete">Setup Complete</string>
+    <string name="setup_complete_message">The service is now running. You can close this app — it will continue working in the background.</string>
+    <string name="close_app">Close</string>
+</resources>

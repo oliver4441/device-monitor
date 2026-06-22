@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download Device Monitor APK</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #121212;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 520px;
+      width: 100%;
+    }
+
+    .card {
+      background: #1E1E1E;
+      border: 1px solid rgba(15, 52, 96, 0.3);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #0f3460, #1a4a7a);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 32px rgba(15, 52, 96, 0.3);
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #D4AF37;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #0f3460, #1a4a7a);
+      color: white;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 52, 96, 0.4);
+      border-color: #D4AF37;
+    }
+
+    .download-btn .icon-download {
+      font-size: 20px;
+    }
+
+    .info {
+      margin-top: 32px;
+      text-align: left;
+    }
+
+    .info h3 {
+      font-size: 14px;
+      color: #D4AF37;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .info ol {
+      padding-left: 20px;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .info ol li {
+      margin-bottom: 4px;
+    }
+
+    .requirements {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(15, 52, 96, 0.15);
+      border-radius: 8px;
+      border: 1px solid rgba(15, 52, 96, 0.2);
+    }
+
+    .requirements p {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .requirements strong {
+      color: #D4AF37;
+    }
+
+    .dashboard-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #0f3460;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 16px;
+      border: 1px solid rgba(15, 52, 96, 0.3);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .dashboard-link:hover {
+      background: rgba(15, 52, 96, 0.2);
+      color: #D4AF37;
+    }
+
+    .detected-badge {
+      display: none;
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .detected-badge.show {
+      display: inline-block;
+    }
+
+    /* Scanline effect */
+    .scanline {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(15, 52, 96, 0.3), transparent);
+      animation: scan 8s linear infinite;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 24px; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="icon">🖥️</div>
+
+      <h1>Device Monitor</h1>
+      <p class="subtitle">Android Device Monitoring &amp; Management</p>
+
+      <!-- Android detection -->
+      <div id="android-badge" class="detected-badge">
+        ✅ Android device detected — ready to install!
+      </div>
+
+      <a href="/api/apk" class="download-btn" id="download-btn">
+        <span class="icon-download">📥</span>
+        Download APK
+      </a>
+
+      <div class="info">
+        <h3>Installation Steps</h3>
+        <ol>
+          <li>Download the APK file using the button above</li>
+          <li>Open the downloaded file on your Android device</li>
+          <li>Allow "Install from unknown sources" if prompted</li>
+          <li>Grant all requested permissions (location, storage, etc.)</li>
+          <li>Open the app — it will auto-register with the server</li>
+          <li>The device appears in the dashboard automatically</li>
+        </ol>
+      </div>
+
+      <div class="requirements">
+        <p>
+          <strong>Requirements:</strong> Android 8.0 (API 26) or higher.
+          Battery optimization should be disabled for reliable background monitoring.
+        </p>
+      </div>
+
+      <a href="/" class="dashboard-link">
+        ← Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Auto-detect Android
+    if (/Android/i.test(navigator.userAgent)) {
+      document.getElementById('android-badge').classList.add('show');
+    }
+  </script>
+</body>
+</html>
