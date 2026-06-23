@@ -1,16 +1,15 @@
 services:
   - type: web
-    name: device-monitor-backend
+    name: nemo-backend
     env: node
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
+    plan: free
     envVars:
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
       - key: DASHBOARD_PASSWORD
         value: admin123
       - key: PORT
         value: 3000
-    plan: free
+      - key: NODE_VERSION
+        value: 20
