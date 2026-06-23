@@ -13,12 +13,3 @@ services:
         value: 3000
       - key: NODE_VERSION
         value: 20
-
-  - type: static_site
-    name: nemo-dashboard
-    buildCommand: cd dashboard && npm install && npm run build
-    rootDir: dashboard
-    plan: free
-    envVars:
-      - key: VITE_API_URL
-        value: https://nemo-backend.onrender.com
