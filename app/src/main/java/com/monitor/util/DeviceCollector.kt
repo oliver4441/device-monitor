@@ -5,7 +5,6 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.location.Address
 import android.location.Geocoder
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -15,12 +14,54 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
-import android.os.storage.StorageManager
-import android.provider.Settings
 import android.telephony.TelephonyManager
 import com.monitor.model.DeviceData
-import java.io.File
 import java.util.Locale
+
+data class LocationData(
+    val latitude: Double,
+    val longitude: Double,
+    val accuracy: Float,
+    val altitude: Double,
+    val speed: Float,
+    val bearing: Float,
+    val address: String
+)
+
+data class BatteryData(
+    val level: Int,
+    val isCharging: Boolean
+)
+
+data class StorageData(
+    val total: Long,
+    val free: Long
+)
+
+data class RamData(
+    val total: Long,
+    val free: Long
+)
+
+data class NetworkData(
+    val wifiConnected: Boolean,
+    val ssid: String,
+    val bssid: String,
+    val signalStrength: Int,
+    val mobileDataEnabled: Boolean,
+    val networkType: String
+)
+
+data class TelephonyData(
+    val carrierName: String,
+    val simSerial: String,
+    val phoneNumber: String
+)
+
+data class ScreenState(
+    val screenOn: Boolean,
+    val isLocked: Boolean
+)
 
 class DeviceCollector(private val context: Context) {
 
@@ -41,36 +82,36 @@ class DeviceCollector(private val context: Context) {
             deviceName = prefsManager.getDeviceName(),
             androidVersion = Build.VERSION.RELEASE,
             sdkVersion = Build.VERSION.SDK_INT,
-            batteryLevel = battery.first,
-            isCharging = battery.second,
-            latitude = location.first,
-            longitude = location.second,
-            accuracy = location.third,
-            altitude = location.fourth,
-            speed = location.fifth,
-            bearing = location.sixth,
-            address = location.seventh,
-            storageTotal = storage.first,
-            storageFree = storage.second,
-            ramTotal = ram.first,
-            ramFree = ram.second,
-            wifiConnected = network.first,
-            wifiSsid = network.second,
-            wifiBssid = network.third,
-            wifiSignalStrength = network.fourth,
-            mobileDataEnabled = network.fifth,
-            networkType = network.sixth,
-            carrierName = telephony.first,
-            simSerial = telephony.second,
-            phoneNumber = telephony.third,
-            screenOn = screen.first,
-            isLocked = screen.second,
+            batteryLevel = battery.level,
+            isCharging = battery.isCharging,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            accuracy = location.accuracy,
+            altitude = location.altitude,
+            speed = location.speed,
+            bearing = location.bearing,
+            address = location.address,
+            storageTotal = storage.total,
+            storageFree = storage.free,
+            ramTotal = ram.total,
+            ramFree = ram.free,
+            wifiConnected = network.wifiConnected,
+            wifiSsid = network.ssid,
+            wifiBssid = network.bssid,
+            wifiSignalStrength = network.signalStrength,
+            mobileDataEnabled = network.mobileDataEnabled,
+            networkType = network.networkType,
+            carrierName = telephony.carrierName,
+            simSerial = telephony.simSerial,
+            phoneNumber = telephony.phoneNumber,
+            screenOn = screen.screenOn,
+            isLocked = screen.isLocked,
             installedApps = apps,
             timestamp = System.currentTimeMillis()
         )
     }
 
-    private fun getLocationData(): Triple<Double, Double, Float, Double, Float, Float, String> {
+    private fun getLocationData(): LocationData {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         var lat = 0.0
         var lng = 0.0
@@ -101,21 +142,13 @@ class DeviceCollector(private val context: Context) {
                 speed = it.speed
                 bearing = it.bearing
 
-                // Reverse geocode to get address
                 try {
+                    @Suppress("DEPRECATION")
                     val geocoder = Geocoder(context, Locale.getDefault())
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        geocoder.getFromLocation(lat, lng, 1) { addresses ->
-                            if (addresses.isNotEmpty()) {
-                                address = addresses[0].getAddressLine(0) ?: "Unknown"
-                            }
-                        }
-                    } else {
-                        @Suppress("DEPRECATION")
-                        val addresses = geocoder.getFromLocation(lat, lng, 1)
-                        if (!addresses.isNullOrEmpty()) {
-                            address = addresses[0].getAddressLine(0) ?: "Unknown"
-                        }
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocation(lat, lng, 1)
+                    if (!addresses.isNullOrEmpty()) {
+                        address = addresses[0].getAddressLine(0) ?: "Unknown"
                     }
                 } catch (_: Exception) {
                     address = "$lat, $lng"
@@ -123,10 +156,10 @@ class DeviceCollector(private val context: Context) {
             }
         } catch (_: Exception) {}
 
-        return Triple(lat, lng, accuracy, altitude, speed, bearing, address)
+        return LocationData(lat, lng, accuracy, altitude, speed, bearing, address)
     }
 
-    private fun getBatteryData(): Pair<Int, Boolean> {
+    private fun getBatteryData(): BatteryData {
         val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         val batteryStatus = context.registerReceiver(null, intentFilter)
 
@@ -143,33 +176,31 @@ class DeviceCollector(private val context: Context) {
                     status == BatteryManager.BATTERY_STATUS_FULL
         }
 
-        return Pair(level, isCharging)
+        return BatteryData(level, isCharging)
     }
 
-    private fun getStorageData(): Pair<Long, Long> {
+    private fun getStorageData(): StorageData {
         return try {
             val stat = StatFs(Environment.getDataDirectory().path)
-            val total = stat.totalBytes
-            val free = stat.availableBytes
-            Pair(total, free)
+            StorageData(stat.totalBytes, stat.availableBytes)
         } catch (_: Exception) {
-            Pair(0L, 0L)
+            StorageData(0L, 0L)
         }
     }
 
-    private fun getRamData(): Pair<Long, Long> {
+    private fun getRamData(): RamData {
         return try {
             val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val memInfo = ActivityManager.MemoryInfo()
             activityManager.getMemoryInfo(memInfo)
-            Pair(memInfo.totalMem, memInfo.availMem)
+            RamData(memInfo.totalMem, memInfo.availMem)
         } catch (_: Exception) {
-            Pair(0L, 0L)
+            RamData(0L, 0L)
         }
     }
 
     @Suppress("DEPRECATION")
-    private fun getNetworkData(): Triple<Boolean, String, String, Int, Boolean, String> {
+    private fun getNetworkData(): NetworkData {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         var wifiConnected = false
         var ssid = ""
@@ -179,36 +210,28 @@ class DeviceCollector(private val context: Context) {
         var networkType = "None"
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val network = connectivityManager.activeNetwork
-                val capabilities = connectivityManager.getNetworkCapabilities(network)
+            val network = connectivityManager.activeNetwork
+            val capabilities = connectivityManager.getNetworkCapabilities(network)
 
-                wifiConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-                mobileData = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+            wifiConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+            mobileData = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
 
-                when {
-                    wifiConnected -> networkType = "WiFi"
-                    mobileData -> {
-                        networkType = when (connectivityManager.activeNetworkInfo?.subtype) {
-                            TelephonyManager.NETWORK_TYPE_LTE -> "4G"
-                            TelephonyManager.NETWORK_TYPE_NR -> "5G"
-                            TelephonyManager.NETWORK_TYPE_UMTS,
-                            TelephonyManager.NETWORK_TYPE_HSPA,
-                            TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
-                            TelephonyManager.NETWORK_TYPE_EDGE,
-                            TelephonyManager.NETWORK_TYPE_GPRS -> "2G"
-                            else -> "Mobile"
-                        }
+            when {
+                wifiConnected -> networkType = "WiFi"
+                mobileData -> {
+                    networkType = when (connectivityManager.activeNetworkInfo?.subtype) {
+                        TelephonyManager.NETWORK_TYPE_LTE -> "4G"
+                        TelephonyManager.NETWORK_TYPE_NR -> "5G"
+                        TelephonyManager.NETWORK_TYPE_UMTS,
+                        TelephonyManager.NETWORK_TYPE_HSPA,
+                        TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
+                        TelephonyManager.NETWORK_TYPE_EDGE,
+                        TelephonyManager.NETWORK_TYPE_GPRS -> "2G"
+                        else -> "Mobile"
                     }
                 }
-            } else {
-                val activeNetwork = connectivityManager.activeNetworkInfo
-                wifiConnected = activeNetwork?.type == ConnectivityManager.TYPE_WIFI
-                mobileData = activeNetwork?.type == ConnectivityManager.TYPE_MOBILE
-                networkType = if (wifiConnected) "WiFi" else if (mobileData) "Mobile" else "None"
             }
 
-            // WiFi details
             if (wifiConnected) {
                 try {
                     val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -220,11 +243,11 @@ class DeviceCollector(private val context: Context) {
             }
         } catch (_: Exception) {}
 
-        return Triple(wifiConnected, ssid, bssid, signalStrength, mobileData, networkType)
+        return NetworkData(wifiConnected, ssid, bssid, signalStrength, mobileData, networkType)
     }
 
     @Suppress("DEPRECATION")
-    private fun getTelephonyData(): Triple<String, String, String> {
+    private fun getTelephonyData(): TelephonyData {
         return try {
             val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             val carrierName = telephonyManager.networkOperatorName ?: "Unknown"
@@ -234,45 +257,31 @@ class DeviceCollector(private val context: Context) {
                 try { telephonyManager.simSerialNumber ?: "Unknown" } catch (_: Exception) { "Unknown" }
             }
             val phoneNumber = try { telephonyManager.line1Number ?: "Unknown" } catch (_: Exception) { "Unknown" }
-            Triple(carrierName, simSerial, phoneNumber)
+            TelephonyData(carrierName, simSerial, phoneNumber)
         } catch (_: Exception) {
-            Triple("Unknown", "Unknown", "Unknown")
+            TelephonyData("Unknown", "Unknown", "Unknown")
         }
     }
 
-    private fun getScreenState(): Pair<Boolean, Boolean> {
+    private fun getScreenState(): ScreenState {
         return try {
             val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-            val screenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                powerManager.isInteractive
-            } else {
-                @Suppress("DEPRECATION")
-                powerManager.isScreenOn
-            }
+            val screenOn = powerManager.isInteractive
 
             val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
-            val isLocked = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                keyguardManager.isDeviceLocked
-            } else {
-                @Suppress("DEPRECATION")
-                keyguardManager.inKeyguardRestrictedInputState
-            }
+            val isLocked = keyguardManager.isDeviceLocked
 
-            Pair(screenOn, isLocked)
+            ScreenState(screenOn, isLocked)
         } catch (_: Exception) {
-            Pair(false, false)
+            ScreenState(false, false)
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun getInstalledApps(): List<String> {
         return try {
             val pm = context.packageManager
-            val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION")
-                pm.getInstalledApplications(0)
-            }
+            val packages = pm.getInstalledApplications(0)
             packages.map { it.loadLabel(pm).toString() }.sorted()
         } catch (_: Exception) {
             emptyList()

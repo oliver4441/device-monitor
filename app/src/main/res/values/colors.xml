@@ -2,4 +2,7 @@
 <resources>
     <color name="ic_launcher_background">#0F3460</color>
     <color name="ic_launcher_foreground">#D4AF37</color>
+    <color name="primary">#0F3460</color>
+    <color name="primary_dark">#0A2540</color>
+    <color name="accent">#D4AF37</color>
 </resources>
