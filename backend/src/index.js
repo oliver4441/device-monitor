@@ -4,10 +4,15 @@ import { WebSocketServer } from 'ws';
 import http from 'http';
 import crypto from 'crypto';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ─── Dashboard Static Files ──────────────────────────────────────────────────
+const dashboardDist = path.join(__dirname, '..', 'dashboard', 'dist');
+const hasDashboard = fs.existsSync(path.join(dashboardDist, 'index.html'));
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
@@ -72,6 +77,11 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// ─── Serve Dashboard Static Files ────────────────────────────────────────────
+if (hasDashboard) {
+  app.use(express.static(dashboardDist));
+}
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
 function deviceAuth(req, res, next) {
@@ -240,6 +250,17 @@ app.post('/api/devices/:deviceId/command', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString(), mode: 'in-memory' });
 });
+
+// ─── Dashboard SPA Catch-All ───────────────────────────────────────────────
+if (hasDashboard) {
+  app.get(/^(?!\/api|\/ws).*/, (req, res) => {
+    res.sendFile(path.join(dashboardDist, 'index.html'), (err) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ error: 'Dashboard not found' });
+      }
+    });
+  });
+}
 
 // ─── HTTP + WebSocket ────────────────────────────────────────────────────────
 const server = http.createServer(app);
