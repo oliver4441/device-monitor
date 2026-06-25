@@ -33,27 +33,30 @@ jobs:
       - name: Build APK
         run: |
           cd app
-          chmod +x gradlew 2>/dev/null || true
-          ./gradlew assembleRelease --no-daemon 2>&1 || echo "Gradle wrapper not found, using direct gradle"
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tail -50
         continue-on-error: true
 
-      - name: Build APK (fallback)
-        if: failure()
+      - name: Find APK files
         run: |
-          cd app
-          gradle assembleRelease --no-daemon
-        continue-on-error: true
+          echo "=== Looking for APK files ==="
+          find app/build -name "*.apk" 2>/dev/null
+          echo "=== APK output dir ==="
+          ls -la app/build/outputs/apk/ 2>/dev/null || echo "No outputs/apk dir"
+          ls -la app/build/outputs/apk/release/ 2>/dev/null || echo "No release dir"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: DeviceMonitor-APK
-          path: app/build/outputs/apk/**/*.apk
+          path: |
+            app/build/outputs/apk/**/*.apk
+            app/build/outputs/apk/*.apk
           if-no-files-found: warn
 
       - name: Create Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
           name: DeviceMonitor Build #${{ github.run_number }}
