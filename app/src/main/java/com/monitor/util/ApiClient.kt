@@ -76,8 +76,13 @@ class ApiClient(private val prefsManager: PrefsManager) {
             if (response.isSuccessful && body != null) {
                 val map = gson.fromJson(body, Map::class.java)
                 val apiKey = map["apiKey"] as? String
+                val serverDeviceId = map["deviceId"] as? String
                 if (apiKey != null) {
                     prefsManager.setApiKey(apiKey)
+                    // Use server-issued device ID if provided
+                    if (serverDeviceId != null) {
+                        prefsManager.setDeviceId(serverDeviceId)
+                    }
                     Log.d(TAG, "Device registered successfully")
                 }
                 apiKey

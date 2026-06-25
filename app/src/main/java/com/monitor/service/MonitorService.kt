@@ -61,6 +61,15 @@ class MonitorService : Service() {
 
         if (!isRunning) {
             isRunning = true
+            // Register device with backend first
+            Thread {
+                val apiKey = apiClient.registerDevice()
+                if (apiKey != null) {
+                    Log.d(TAG, "Device registered, starting monitoring")
+                } else {
+                    Log.e(TAG, "Failed to register device, will retry")
+                }
+            }.start()
             // Register alarm for periodic collection
             AlarmReceiver.scheduleAlarm(this)
             // Start immediate collection
@@ -78,7 +87,12 @@ class MonitorService : Service() {
             // Send to backend
             Thread {
                 try {
-                    apiClient.sendData(data)
+                    val sent = apiClient.sendData(data)
+                    if (!sent) {
+                        Log.w(TAG, "Send failed, trying to re-register...")
+                        apiClient.registerDevice()
+                        apiClient.sendData(data)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to send data: ${e.message}")
                 }

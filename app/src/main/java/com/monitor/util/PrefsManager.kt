@@ -29,7 +29,9 @@ class PrefsManager(context: Context) {
         return id
     }
 
-    fun getApiUrl(): String = prefs.getString(KEY_API_URL, "https://your-server.vercel.app")!!
+    fun setDeviceId(id: String) = prefs.edit().putString(KEY_DEVICE_ID, id).apply()
+
+    fun getApiUrl(): String = prefs.getString(KEY_API_URL, "https://device-monitor-r97y.onrender.com")!!
 
     fun setApiUrl(url: String) = prefs.edit().putString(KEY_API_URL, url).apply()
 
