@@ -1,5 +1,15 @@
 import React from 'react';
-import { formatDistanceToNow } from 'date-fns';
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
 
 export default function DeviceList({ devices, loading, error, selectedDevice, onSelect }) {
   if (loading) {
@@ -38,7 +48,7 @@ export default function DeviceList({ devices, loading, error, selectedDevice, on
       {devices.map((device) => {
         const isSelected = selectedDevice?.device_id === device.device_id;
         const lastSeen = device.last_seen
-          ? formatDistanceToNow(new Date(device.last_seen), { addSuffix: true })
+          ? timeAgo(device.last_seen)
           : 'Never';
 
         return (
