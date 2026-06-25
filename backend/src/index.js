@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ─── Dashboard Static Files ──────────────────────────────────────────────────
-const dashboardDist = path.join(__dirname, '..', 'dashboard', 'dist');
+const dashboardDist = path.join(__dirname, '..', 'public');
 const hasDashboard = fs.existsSync(path.join(dashboardDist, 'index.html'));
 
 // ─── Config ──────────────────────────────────────────────────────────────────
